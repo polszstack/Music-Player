@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Harmony Player · Black Edition</title>
+  <script src="https://cdn.tailwindcss.com">
+  </script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            surface: '#0a0a0a',
+            elevated: '#141414',
+            border: '#2a2a2a',
+            muted: '#9ca3af',
+            accent: '#f5f5f5'
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js">
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      background: #000000;
+      touch-action: pan-x pan-y;
+    }
+    
+    .scrollbar-hide::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .scrollbar-hide {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    
+    .progress-bar {
+      transition: width 0.15s linear;
+    }
+    
+    .slide-enter-active,
+    .slide-leave-active {
+      transition: transform 0.35s cubic-bezier(0.25, 0.8, 0.25, 1.2), opacity 0.25s ease;
+    }
+    
+    .slide-enter-from,
+    .slide-leave-to {
+      transform: translateY(15%);
+      opacity: 0;
+    }
+    
+    .fade-enter-active,
+    .fade-leave-active {
+      transition: opacity 0.25s ease;
+    }
+    
+    .fade-enter-from,
+    .fade-leave-to {
+      opacity: 0;
+    }
+    
+    @media (max-width: 640px) {
+      .mobile-safe {
+        padding-bottom: env(safe-area-inset-bottom, 16px);
+      }
+    }
+    
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 4px;
+      background: #404040;
+      border-radius: 5px;
+      outline: none;
+    }
+    
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: white;
+      cursor: pointer;
+    }
+    
+    input[type="range"]::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: white;
+      cursor: pointer;
+      border: none;
+    }
+  </style>
+</head>
+<body class="bg-black text-white flex items-center justify-center min-h-screen p-0 sm:p-4 font-sans antialiased">
+  <div id="app" class="w-full max-w-md mx-auto bg-black min-h-screen sm:min-h-0 sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden border border-gray-900 relative">
+
+    <!-- Header -->
+    <header class="flex items-center justify-between px-5 pt-6 pb-2 z-10">
+      <span class="text-lg font-semibold tracking-tight text-neutral-200">Harmony</span>
+      <div class="flex items-center gap-3">
+        <button @click="openModal('notifications')" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-neutral-900 transition text-neutral-400 hover:text-white relative">
+          <i class="fas fa-bell text-sm"></i>
+          <span class="absolute top-1 right-1 w-2 h-2 bg-red-600 rounded-full"></span>
+        </button>
+        <button @click="openModal('creator')" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-neutral-900 transition text-neutral-400 hover:text-white">
+          <i class="fas fa-user text-sm"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Album Art + Info -->
+    <div class="px-6 mt-2 mb-4">
+      <div class="w-full aspect-square rounded-2xl overflow-hidden bg-neutral-900 shadow-2xl mx-auto relative group">
+        <img :src="currentSong.cover" alt="cover" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+        <span v-if="playing" class="absolute top-3 right-3 bg-black/70 backdrop-blur-md text-xs px-3 py-1.5 rounded-full text-white flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span> LIVE
+        </span>
+      </div>
+
+      <div class="mt-5 text-center px-1">
+        <h2 class="text-xl font-bold truncate text-neutral-100 leading-tight">{{ currentSong.title }}</h2>
+        <p class="text-sm text-neutral-500 mt-1 truncate">{{ currentSong.artist }}</p>
+      </div>
+    </div>
+
+    <!-- Progress -->
+    <div class="px-6 mt-2">
+      <div class="w-full h-1.5 bg-neutral-800 rounded-full cursor-pointer relative group" @click="setProgress" ref="progressArea">
+        <div class="h-full bg-white rounded-full progress-bar relative" :style="{ width: progressPercent + '%' }">
+          <div class="absolute right-0 top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-white rounded-full shadow opacity-0 group-hover:opacity-100 transition"></div>
+        </div>
+      </div>
+      <div class="flex justify-between text-xs text-neutral-500 mt-2 font-mono">
+        <span>{{ formatTime(currentTime) }}</span>
+        <span>{{ formatTime(duration) }}</span>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="flex items-center justify-between px-6 mt-6">
+      <button @click="toggleShuffle" class="w-10 h-10 flex items-center justify-center rounded-full transition" :class="shuffle ? 'text-white bg-neutral-800' : 'text-neutral-500 hover:text-white'">
+        <i class="fas fa-random text-sm"></i>
+      </button>
+
+      <div class="flex items-center gap-5">
+        <button @click="prevSong" class="w-10 h-10 flex items-center justify-center rounded-full text-neutral-300 hover:text-white hover:bg-neutral-900 transition">
+          <i class="fas fa-step-backward text-lg"></i>
+        </button>
+
+        <button @click="togglePlay" class="w-16 h-16 flex items-center justify-center rounded-full bg-white text-black hover:scale-105 transition-transform shadow-xl shadow-white/20">
+          <i class="fas text-xl" :class="playing ? 'fa-pause' : 'fa-play'"></i>
+        </button>
+
+        <button @click="nextSong" class="w-10 h-10 flex items-center justify-center rounded-full text-neutral-300 hover:text-white hover:bg-neutral-900 transition">
+          <i class="fas fa-step-forward text-lg"></i>
+        </button>
+      </div>
+
+      <button @click="toggleRepeat" class="w-10 h-10 flex items-center justify-center rounded-full transition" :class="repeat ? 'text-white bg-neutral-800' : 'text-neutral-500 hover:text-white'">
+        <i class="fas fa-redo text-sm"></i>
+      </button>
+    </div>
+
+    <!-- Bottom actions (volume + playlist) -->
+    <div class="flex items-center justify-between px-6 mt-6 mb-4">
+      <div class="flex items-center gap-2 w-28">
+        <i class="fas fa-volume-up text-neutral-500 text-sm w-5"></i>
+        <input type="range" min="0" max="1" step="0.01" v-model="volume" @input="setVolume" class="w-full h-1 bg-neutral-700 rounded-full appearance-none cursor-pointer accent-white" />
+      </div>
+
+      <button @click="openModal('playlist')" class="w-9 h-9 flex items-center justify-center rounded-full text-neutral-400 hover:text-white hover:bg-neutral-900 transition">
+        <i class="fas fa-list text-sm"></i>
+      </button>
+    </div>
+
+    <!-- Toast -->
+    <transition name="fade">
+      <div v-if="toastMessage" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-neutral-900 text-white text-sm px-5 py-2.5 rounded-full shadow-2xl border border-neutral-800 z-50">
+        {{ toastMessage }}
+      </div>
+    </transition>
+
+    <!-- Overlay / Modals -->
+    <transition name="slide">
+      <div v-if="activeModal" class="fixed inset-0 z-40 flex items-end sm:items-center justify-center bg-black/80 backdrop-blur-sm px-0 sm:px-4" @click.self="activeModal = null">
+        <div class="bg-neutral-950 w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 flex flex-col shadow-2xl border border-neutral-800 relative mobile-safe" :style="activeModal === 'playlist' ? 'height: 85vh; max-height: 85vh;' : 'max-height: 85vh;'" @click.stop>
+
+          <!-- Close button -->
+          <button @click="activeModal = null" class="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full bg-neutral-800 text-white hover:bg-neutral-700 transition z-10">
+            <i class="fas fa-times"></i>
+          </button>
+
+          <!-- Playlist Modal -->
+          <div v-if="activeModal === 'playlist'" class="flex flex-col h-full overflow-hidden">
+            <div class="flex-shrink-0 mb-4">
+              <h3 class="text-xl font-semibold mb-1">Playlist</h3>
+              <p class="text-sm text-neutral-500">{{ songs.length }} songs</p>
+            </div>
+            <div class="overflow-y-auto flex-1 scrollbar-hide -mx-2 px-2" style="overscroll-behavior: contain;">
+              <div v-for="(song, idx) in songs" :key="idx" @click="selectSong(idx)" class="flex items-center gap-3 p-3 rounded-xl mb-1 cursor-pointer transition hover:bg-neutral-900" :class="idx === currentIndex ? 'bg-neutral-900 border border-neutral-800' : ''">
+                <img :src="song.cover" class="w-11 h-11 rounded-lg object-cover bg-neutral-800 flex-shrink-0" />
+                <div class="flex-1 min-w-0">
+                  <div class="text-sm font-medium truncate">{{ song.title }}</div>
+                  <div class="text-xs text-neutral-500 truncate">{{ song.artist }}</div>
+                </div>
+                <span class="text-xs text-neutral-600 flex-shrink-0">4:20</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Creator Modal -->
+          <div v-else-if="activeModal === 'creator'" class="text-center flex flex-col items-center overflow-y-auto flex-1 scrollbar-hide">
+            <div class="w-24 h-24 rounded-full bg-neutral-800 mb-4 flex items-center justify-center flex-shrink-0">
+              <i class="fas fa-user-astronaut text-4xl text-neutral-400"></i>
+            </div>
+            <h3 class="text-xl font-semibold">Creator</h3>
+            <p class="text-neutral-400 text-sm mt-1">The Developer</p>
+            <p class="mt-4 text-neutral-300 text-sm leading-relaxed px-2">
+              Suggest songs via email:<br>
+              <span class="text-white font-mono bg-neutral-900 px-2 py-1 rounded">jvanpablo455@gmail.com</span>
+            </p>
+            <p class="text-xs text-neutral-500 mt-3">Format: (Song) by (Artist)</p>
+            <p class="text-xs text-neutral-600 mt-2">I will update the player whenever I have free time.</p>
+            <div class="flex gap-4 mt-5 mb-4">
+              <a href="https://github.com/P4blo0o0" class="w-9 h-9 rounded-full bg-neutral-800 flex items-center justify-center text-white hover:bg-neutral-700"><i class="fab fa-github"></i></a>
+              <a href="#" class="w-9 h-9 rounded-full bg-neutral-800 flex items-center justify-center text-white hover:bg-neutral-700"><i class="fab fa-twitter"></i></a>
+            </div>
+          </div>
+
+          <!-- Notifications Modal -->
+          <div v-else-if="activeModal === 'notifications'" class="flex flex-col h-full overflow-hidden">
+            <div class="flex-shrink-0 mb-4">
+              <h3 class="text-xl font-semibold mb-1">Notifications</h3>
+              <p class="text-sm text-neutral-500">Latest updates</p>
+            </div>
+            <div class="space-y-3 overflow-y-auto flex-1 scrollbar-hide" style="overscroll-behavior: contain;">
+              <div class="bg-neutral-900 p-4 rounded-xl border-l-2 border-white">
+                <h4 class="font-medium text-sm">Creator's Status</h4>
+                <p class="text-xs text-neutral-400 mt-1">badly sick</p>
+              </div>
+              <div class="bg-neutral-900 p-4 rounded-xl border-l-2 border-neutral-600">
+                <h4 class="font-medium text-sm">Reminder</h4>
+                <p class="text-xs text-neutral-400 mt-1">I can only upload limited songs at a time.</p>
+              </div>
+              <div class="bg-neutral-900 p-4 rounded-xl border-l-2 border-neutral-600">
+                <h4 class="font-medium text-sm">Song Suggestions</h4>
+                <p class="text-xs text-neutral-400 mt-1">Email jvanpablo455@gmail.com with format: (Song) by (Artist). Click the creator icon for more details.</p>
+              </div>
+              <div class="bg-neutral-900 p-4 rounded-xl border-l-2 border-neutral-600">
+                <h4 class="font-medium text-sm">Player Updates</h4>
+                <p class="text-xs text-neutral-400 mt-1">The music player will be updated periodically with new features and improvements. Stay tuned!</p>
+              </div>
+              <div class="bg-neutral-900 p-4 rounded-xl border-l-2 border-neutral-600">
+                <h4 class="font-medium text-sm">Mobile Support</h4>
+                <p class="text-xs text-neutral-400 mt-1">This player is fully optimized for mobile devices. For the best experience, use portrait mode.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition>
+  </div>
+
+  <script>
+    const { createApp, ref, computed, watch, onMounted } = Vue;
+
+    createApp({
+      setup() {
+        const songs = [
+          {
+            title: "Hinahanap-Hanap Kita",
+            artist: "Rivermaya",
+            src: "songs/hinahanap_hanap_kita.mp3",
+            cover: "pictures/hinahanap_hanap_kita.jpeg"
+          },
+          {
+            title: "Kanlungan",
+            artist: "Noel Cabangon",
+            src: "songs/kanlungan.mp3",
+            cover: "pictures/kanlungan.jpeg"
+          },
+          {
+            title: "Against All Odds",
+            artist: "Phil Collins",
+            src: "songs/against_all_odds.mp3",
+            cover: "pictures/against_all_odds.jpeg"
+          },
+          {
+            title: "Pare Mahal Mo Raw Ako",
+            artist: "Michael Pangilinan",
+            src: "songs/pare.mp3",
+            cover: "pictures/pare.jpeg"
+          },
+          {
+            title: "Ben 10",
+            artist: "Little Ditto",
+            src: "songs/ben10.mp3",
+            cover: "pictures/ben10.jpeg"
+          },
+          {
+            title: "Bye Bye",
+            artist: "Mariah Carey",
+            src: "songs/byebye.mp3",
+            cover: "pictures/byebye.jpeg"
+          },
+          {
+            title: "Nakakakamiss",
+            artist: "Smugglaz, Curse One, Dello & Flict G",
+            src: "songs/nakakamiss.mp3",
+            cover: "pictures/nakakamiss.jpeg"
+          },
+          {
+            title: "Dota O Ako",
+            artist: "Aikee, Sabrina",
+            src: "songs/dota_o_ako.mp3",
+            cover: "pictures/dota_o_ako.jpeg"
+          },
+          {
+            title: "Made For Me",
+            artist: "Muni Long",
+            src: "songs/made_for_me.mp3",
+            cover: "pictures/made_for_me.jpeg"
+          },
+          {
+            title: "Birds of a Feather",
+            artist: "Billie Eilish",
+            src: "songs/birds_of_a_feather.mp3",
+            cover: "pictures/birds_of_a_feather.jpeg"
+          },
+          {
+            title: "Reyna ng Quezon City",
+            artist: "Juana",
+            src: "songs/reyna_ng_quezon_city.mp3",
+            cover: "pictures/reyna_ng_quezon_city.jpeg"
+          },
+          {
+            title: "Love Me Like You Do",
+            artist: "Ellie Goulding",
+            src: "songs/love_me_like_you_do.mp3",
+            cover: "pictures/love_me_like_you_do.jpg"
+          },
+          {
+            title: "Minsan",
+            artist: "Eraserheads",
+            src: "songs/minsan.mp3",
+            cover: "pictures/minsan.jpeg"
+          },
+          {
+            title: "Robbers",
+            artist: "The 1975",
+            src: "songs/robbers.mp3",
+            cover: "pictures/robbers.gif"
+          },
+          {
+            title: "If",
+            artist: "Bread",
+            src: "songs/if.mp3",
+            cover: "pictures/if.gif"
+          },
+          {
+            title: "Champagne Supernova",
+            artist: "Oasis",
+            src: "songs/supernova.mp3",
+            cover: "pictures/supernova.jpeg"
+          },
+          {
+            title: "Amazing",
+            artist: "Rex Orange County",
+            src: "songs/amazing.mp3",
+            cover: "pictures/amazing.gif"
+          },
+          {
+            title: "Bed Of Roses",
+            artist: "Bon Jovi",
+            src: "songs/bed_of_roses.mp3",
+            cover: "pictures/bed_of_roses.gif"
+          },
+          {
+            title: "To The Bone",
+            artist: "Pamungkas",
+            src: "songs/to_the_bone.mp3",
+            cover: "pictures/to_the_bone.gif"
+          },
+          {
+            title: "Huwag Kang Matakot",
+            artist: "Eraserheads",
+            src: "songs/huwag_kang_matakot.mp3",
+            cover: "pictures/huwag_kang_matakot.jpeg"
+          },
+          {
+            title: "Judas",
+            artist: "Lady Gaga",
+            src: "songs/judas.mp3",
+            cover: "pictures/judas.gif"
+          },
+          {
+            title: "Just Dance",
+            artist: "Lady Gaga",
+            src: "songs/just_dance.mp3",
+            cover: "pictures/just_dance.gif"
+          },
+          {
+            title: "Daddy's Home",
+            artist: "Usher",
+            src: "songs/daddys_home.mp3",
+            cover: "pictures/daddys_home.gif"
+          },
+          {
+            title: "Radioactive",
+            artist: "21/09/2025",
+            src: "songs/radioactive.mp3",
+            cover: "pictures/radioactive.gif"
+          },
+          {
+            title: "Wavin' Flag",
+            artist: "",
+            src: "songs/wavin_flag.mp3",
+            cover: "pictures/wavin_flag.jpeg"
+          },
+          {
+            title: "Stand by Me",
+            artist: "Oasis",
+            src: "songs/stand_by_me.mp3",
+            cover: "pictures/stand_by_me.jpeg"
+          },
+          {
+            title: "Mirrors",
+            artist: "Justin Timberlake",
+            src: "songs/mirrors.mp3",
+            cover: "pictures/mirrors.jpeg"
+          },
+          {
+            title: "Mine",
+            artist: "Bazzi",
+            src: "songs/mine.mp3",
+            cover: "pictures/mine.jpeg"
+          },
+          {
+            title: "Love",
+            artist: "Kendrick Lamar",
+            src: "songs/love.mp3",
+            cover: "pictures/love.jpeg"
+          },
+          {
+            title: "My Sacrifice",
+            artist: "Creed",
+            src: "songs/my_sacrifice.mp3",
+            cover: "pictures/my_sacrifice.jpeg"
+          },
+          {
+            title: "September Ends",
+            artist: "Green Day",
+            src: "songs/september_ends.mp3",
+            cover: "pictures/september_ends.jpeg"
+          },
+          {
+            title: "Take da Charge",
+            artist: "Project Pat",
+            src: "songs/take_da_charge.mp3",
+            cover: "pictures/take_da_charge.jpeg"
+          },
+          {
+            title: "Bad Habit",
+            artist: "Steve Lacy",
+            src: "songs/bad_habit.mp3",
+            cover: "pictures/bad_habit.jpeg"
+          },
+          {
+            title: "Dangerous",
+            artist: "Kardinal Offishall feat. Akon",
+            src: "songs/dangerous.mp3",
+            cover: "pictures/dangerous.jpeg"
+          },
+          {
+            title: "God's Plan",
+            artist: "Drake",
+            src: "songs/gods_plan.mp3",
+            cover: "pictures/gods_plan.jpeg"
+          },
+          {
+            title: "I Walk This Earth All by Myself",
+            artist: "EKKSTACY",
+            src: "songs/i_walk_this_earth_al_by_my_self.mp3",
+            cover: "pictures/i_walk_this_earth_al_by_my_self.jpeg"
+          },
+          {
+            title: "Girl With The Tattoo",
+            artist: "Miguel",
+            src: "songs/the_girl_with_the_tattoo.mp3",
+            cover: "pictures/the_girl_with_the_tattoo.jpeg"
+          },
+          {
+            title: "Washing Machine Heart",
+            artist: "Mitski",
+            src: "songs/washing_machine_heart.mp3",
+            cover: "pictures/washing_machine_heart.jpeg"
+          },
+          {
+            title: "Locked Away",
+            artist: "R. City feat. Adam Levine",
+            src: "songs/locked_away.mp3",
+            cover: "pictures/locked_away.jpeg"
+          },
+          {
+            title: "The Reason",
+            artist: "Hoobastank",
+            src: "songs/the_reason.mp3",
+            cover: "pictures/the_reason.jpeg"
+          },
+          {
+            title: "Classic",
+            artist: "MKTO",
+            src: "songs/classic.mp3",
+            cover: "pictures/classic.jpeg"
+          },
+          {
+            title: "Last Night on Earth",
+            artist: "Green Day",
+            src: "songs/last_night_on_earth.mp3",
+            cover: "pictures/last_night_on_earth.jpeg"
+          },
+          {
+            title: "The Only Exception",
+            artist: "Paramore",
+            src: "songs/the_only_exception.mp3",
+            cover: "pictures/the_only_exception.jpeg"
+          },
+          {
+            title: "Happy Nation",
+            artist: "Ace of Base",
+            src: "songs/happy_nation.mp3",
+            cover: "pictures/happy_nation.jpeg"
+          },
+          {
+            title: "Nothin' on You",
+            artist: "B.O.B feat. Bruno Mars",
+            src: "songs/nothin_on_you.mp3",
+            cover: "pictures/nothin_on_you.jpeg"
+          },
+          {
+            title: "My Girl",
+            artist: "The Temptations",
+            src: "songs/my_girl.mp3",
+            cover: "pictures/my_girl.jpeg"
+          },
+          {
+            title: "Kiss Me",
+            artist: "Sixpence None The Richer",
+            src: "songs/kiss_me.mp3",
+            cover: "pictures/kiss_me.jpeg"
+          },
+          {
+            title: "More Than Words",
+            artist: "Extreme",
+            src: "songs/more_than_words.mp3",
+            cover: "pictures/more_than_words.jpeg"
+          },
+          {
+            title: "Sweater Weather",
+            artist: "The Neighbourhood",
+            src: "songs/sweater_weather.mp3",
+            cover: "pictures/sweater_weather.jpeg"
+          },
+          {
+            title: "Dandelions",
+            artist: "Ruth B.",
+            src: "songs/dandelions.mp3",
+            cover: "pictures/dandelions.jpeg"
+          },
+          {
+            title: "I Don't Care",
+            artist: "Ed Sheeran, Justin Bieber",
+            src: "songs/i_dont_care.mp3",
+            cover: "pictures/i_dont_care.jpeg"
+          },
+          {
+            title: "Summertime Sadness",
+            artist: "Lana Del Rey",
+            src: "songs/summertime_sadness.mp3",
+            cover: "pictures/summertime_sadness.jpeg"
+          },
+          {
+            title: "All For Love",
+            artist: "Rod Stewart",
+            src: "songs/all_for_love.mp3",
+            cover: "pictures/all_for_love.jpeg"
+          },
+          {
+            title: "Another Day in Paradise",
+            artist: "Phil Collins",
+            src: "songs/another_day_in_paradise.mp3",
+            cover: "pictures/another_day_in_paradise.jpeg"
+          },
+          {
+            title: "Getting To Know Each Other",
+            artist: "Gerard Kenny",
+            src: "songs/getting_to_know_each_other.mp3",
+            cover: "pictures/getting_to_know_each_other.jpeg"
+          },
+          {
+            title: "Piano Man",
+            artist: "Billy Joel",
+            src: "songs/piano_man.mp3",
+            cover: "pictures/piano_man.jpeg"
+          },
+          {
+            title: "Last Christmas",
+            artist: "Wham!",
+            src: "songs/last_christmas.mp3",
+            cover: "pictures/last_christmas.jpeg"
+          },
+          {
+            title: "Para Sa Akin",
+            artist: "Jason Dhakal",
+            src: "songs/para_sa_akin.mp3",
+            cover: "pictures/para_sa_akin.jpeg"
+          },
+          {
+            title: "Waltz of Four Left Feet",
+            artist: "shirebound",
+            src: "songs/waltz_of_four_left_feet.mp3",
+            cover: "pictures/waltz_of_four_left_feet.jpeg"
+          },
+          {
+            title: "Tibok",
+            artist: "Earl Agustin",
+            src: "songs/tibok.mp3",
+            cover: "pictures/tibok.jpeg"
+          },
+          {
+            title: "dahan-dahan",
+            artist: "Lola Amour",
+            src: "songs/dahan_dahan.mp3",
+            cover: "pictures/dahan_dahan.jpeg"
+          },
+          {
+            title: "Pahintulot",
+            artist: "shirebound",
+            src: "songs/pahintulot.mp3",
+            cover: "pictures/waltz_of_four_left_feet1.jpeg"
+          },
+          {
+            title: "Nakauwi Na",
+            artist: "Ang Bandang Shirley",
+            src: "songs/nakauwi_na.mp3",
+            cover: "pictures/nakauwi_na.jpeg"
+          },
+          {
+            title: "Fallen",
+            artist: "Lola Amour",
+            src: "songs/fallen.mp3",
+            cover: "pictures/fallen.jpeg"
+          },
+          {
+            title: "Thunder",
+            artist: "Boys Like Girls",
+            src: "songs/thunder.mp3",
+            cover: "pictures/thunder.jpeg"
+          },
+          {
+            title: "You and Me",
+            artist: "Lifehouse",
+            src: "songs/you_and_me.mp3",
+            cover: "pictures/you_and_me.jpeg"
+          },
+          {
+            title: "stickwitu",
+            artist: "The Pussycat Dolls",
+            src: "songs/stick_with_u.mp3",
+            cover: "pictures/images.jpeg"
+          }
+        ];
+
+        const audio = new Audio();
+        const currentIndex = ref(0);
+        const playing = ref(false);
+        const currentTime = ref(0);
+        const duration = ref(0);
+        const volume = ref(0.7);
+        const shuffle = ref(false);
+        const repeat = ref(false);
+        const toastMessage = ref('');
+        const activeModal = ref(null);
+        let toastTimer = null;
+
+        const currentSong = computed(() => songs[currentIndex.value] || songs[0]);
+        const progressPercent = computed(() => {
+          if (!duration.value) return 0;
+          return (currentTime.value / duration.value) * 100;
+        });
+
+        const formatTime = (sec) => {
+          if (isNaN(sec) || !isFinite(sec)) return '0:00';
+          const m = Math.floor(sec / 60);
+          const s = Math.floor(sec % 60);
+          return `${m}:${s.toString().padStart(2, '0')}`;
+        };
+
+        const showToast = (msg) => {
+          toastMessage.value = msg;
+          clearTimeout(toastTimer);
+          toastTimer = setTimeout(() => { toastMessage.value = ''; }, 2200);
+        };
+
+        const loadAudio = (index) => {
+          const s = songs[index];
+          if (!s) return;
+          audio.src = s.src;
+          audio.load();
+          currentTime.value = 0;
+          duration.value = 0;
+        };
+
+        const play = () => {
+          audio.play().then(() => {
+            playing.value = true;
+          }).catch((err) => {
+            console.log('Playback prevented:', err);
+            showToast('Tap play to start');
+          });
+        };
+
+        const pause = () => {
+          audio.pause();
+          playing.value = false;
+        };
+
+        const togglePlay = () => {
+          // Always ensure the audio source is set
+          if (!audio.src || audio.src !== songs[currentIndex.value]?.src) {
+            loadAudio(currentIndex.value);
+            // Small delay to allow audio to load
+            setTimeout(() => {
+              if (playing.value) {
+                pause();
+              } else {
+                play();
+              }
+            }, 50);
+            return;
+          }
+          
+          if (playing.value) {
+            pause();
+          } else {
+            play();
+          }
+        };
+
+        const nextSong = () => {
+          if (shuffle.value) {
+            let next = Math.floor(Math.random() * songs.length);
+            if (next === currentIndex.value && songs.length > 1) {
+              next = (next + 1) % songs.length;
+            }
+            currentIndex.value = next;
+          } else {
+            currentIndex.value = (currentIndex.value + 1) % songs.length;
+          }
+          loadAudio(currentIndex.value);
+          if (playing.value) play();
+          showToast('Next track');
+        };
+
+        const prevSong = () => {
+          if (shuffle.value) {
+            let prev = Math.floor(Math.random() * songs.length);
+            currentIndex.value = prev;
+          } else {
+            currentIndex.value = (currentIndex.value - 1 + songs.length) % songs.length;
+          }
+          loadAudio(currentIndex.value);
+          if (playing.value) play();
+          showToast('Previous track');
+        };
+
+        const selectSong = (idx) => {
+          currentIndex.value = idx;
+          loadAudio(idx);
+          // Use a small delay to ensure the audio is loaded before playing
+          setTimeout(() => {
+            play();
+          }, 100);
+          activeModal.value = null;
+          showToast(`Now: ${songs[idx].title}`);
+        };
+
+        const setProgress = (e) => {
+          if (!audio.duration) return;
+          const rect = e.currentTarget.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const width = rect.width;
+          audio.currentTime = (x / width) * audio.duration;
+        };
+
+        const setVolume = () => {
+          audio.volume = volume.value;
+        };
+
+        const toggleShuffle = () => {
+          shuffle.value = !shuffle.value;
+          showToast(shuffle.value ? 'Shuffle on' : 'Shuffle off');
+        };
+
+        const toggleRepeat = () => {
+          repeat.value = !repeat.value;
+          showToast(repeat.value ? 'Repeat on' : 'Repeat off');
+        };
+
+        const openModal = (name) => {
+          activeModal.value = name;
+        };
+
+        onMounted(() => {
+          audio.volume = volume.value;
+          loadAudio(currentIndex.value);
+
+          audio.addEventListener('timeupdate', () => {
+            currentTime.value = audio.currentTime;
+          });
+          audio.addEventListener('loadedmetadata', () => {
+            duration.value = audio.duration;
+          });
+          audio.addEventListener('ended', () => {
+            if (repeat.value) {
+              audio.currentTime = 0;
+              play();
+            } else {
+              nextSong();
+            }
+          });
+          audio.addEventListener('play', () => { playing.value = true; });
+          audio.addEventListener('pause', () => { playing.value = false; });
+        });
+
+        watch(currentIndex, (newIdx) => {
+          loadAudio(newIdx);
+        });
+
+        return {
+          songs,
+          currentIndex,
+          currentSong,
+          playing,
+          currentTime,
+          duration,
+          volume,
+          shuffle,
+          repeat,
+          toastMessage,
+          activeModal,
+          progressPercent,
+          formatTime,
+          togglePlay,
+          nextSong,
+          prevSong,
+          selectSong,
+          setProgress,
+          setVolume,
+          toggleShuffle,
+          toggleRepeat,
+          openModal,
+        };
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>
