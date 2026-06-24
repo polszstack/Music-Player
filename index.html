@@ -177,7 +177,7 @@
         <input type="range" min="0" max="1" step="0.01" v-model="volume" @input="setVolume" class="w-full h-1 bg-neutral-700 rounded-full appearance-none cursor-pointer accent-white" />
       </div>
 
-      <button @click="openModal('playlist')" class="w-9 h-9 flex items-center justify-center rounded-full text-neutral-400 hover:text-white hover:bg-neutral-900 transition">
+      <button @click="openModal('playlist')" class="w-9 h-9 flex items-center justify-center rounded-full text-neutral-400 hover:text-white hover:bg-neutral-900 transition relative">
         <i class="fas fa-list text-sm"></i>
       </button>
     </div>
@@ -256,8 +256,8 @@
                 <p class="text-xs text-neutral-400 mt-1">Email jvanpablo455@gmail.com with format: (Song) by (Artist). Click the creator icon for more details.</p>
               </div>
               <div class="bg-neutral-900 p-4 rounded-xl border-l-2 border-neutral-600">
-                <h4 class="font-medium text-sm">Player Updates</h4>
-                <p class="text-xs text-neutral-400 mt-1">The music player will be updated periodically with new features and improvements. Stay tuned!</p>
+                <h4 class="font-medium text-sm">New Feature 🎵</h4>
+                <p class="text-xs text-neutral-400 mt-1">Playlist now opens automatically when you visit. Choose your favorite song to start!</p>
               </div>
               <div class="bg-neutral-900 p-4 rounded-xl border-l-2 border-neutral-600">
                 <h4 class="font-medium text-sm">Mobile Support</h4>
