@@ -271,7 +271,7 @@
   </div>
 
   <script>
-    const { createApp, ref, computed, watch, onMounted } = Vue;
+    const { createApp, ref, computed, watch, onMounted, nextTick } = Vue;
 
     createApp({
       setup() {
@@ -690,6 +690,7 @@
         const repeat = ref(false);
         const toastMessage = ref('');
         const activeModal = ref(null);
+        const isFirstLoad = ref(true);
         let toastTimer = null;
 
         const currentSong = computed(() => songs[currentIndex.value] || songs[0]);
@@ -818,11 +819,21 @@
 
         const openModal = (name) => {
           activeModal.value = name;
+          if (name === 'playlist') {
+            isFirstLoad.value = false;
+          }
         };
 
         onMounted(() => {
           audio.volume = volume.value;
           loadAudio(currentIndex.value);
+
+          // Auto-open playlist modal on first load
+          nextTick(() => {
+            if (isFirstLoad.value) {
+              openModal('playlist');
+            }
+          });
 
           audio.addEventListener('timeupdate', () => {
             currentTime.value = audio.currentTime;
