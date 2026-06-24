@@ -97,6 +97,21 @@
       cursor: pointer;
       border: none;
     }
+    
+    /* Enhanced shuffle button styles */
+    .shuffle-active {
+      background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+    }
+    
+    .shuffle-active i {
+      animation: shufflePulse 1.5s ease-in-out infinite;
+    }
+    
+    @keyframes shufflePulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
   </style>
 </head>
 <body class="bg-black text-white flex items-center justify-center min-h-screen p-0 sm:p-4 font-sans antialiased">
@@ -147,8 +162,12 @@
 
     <!-- Controls -->
     <div class="flex items-center justify-between px-6 mt-6">
-      <button @click="toggleShuffle" class="w-10 h-10 flex items-center justify-center rounded-full transition" :class="shuffle ? 'text-white bg-neutral-800' : 'text-neutral-500 hover:text-white'">
+      <button @click="toggleShuffle" 
+              class="w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 relative"
+              :class="shuffle ? 'shuffle-active text-white' : 'text-neutral-500 hover:text-white'"
+              title="Shuffle">
         <i class="fas fa-random text-sm"></i>
+        <span v-if="shuffle" class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-white rounded-full"></span>
       </button>
 
       <div class="flex items-center gap-5">
@@ -165,8 +184,12 @@
         </button>
       </div>
 
-      <button @click="toggleRepeat" class="w-10 h-10 flex items-center justify-center rounded-full transition" :class="repeat ? 'text-white bg-neutral-800' : 'text-neutral-500 hover:text-white'">
+      <button @click="toggleRepeat" 
+              class="w-10 h-10 flex items-center justify-center rounded-full transition relative"
+              :class="repeat ? 'text-white bg-neutral-800' : 'text-neutral-500 hover:text-white'"
+              title="Repeat">
         <i class="fas fa-redo text-sm"></i>
+        <span v-if="repeat" class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-white rounded-full"></span>
       </button>
     </div>
 
@@ -276,8 +299,7 @@
     createApp({
       setup() {
         const songs = [
-          
-        {
+          {
             title: "Faithfully",
             artist: "Journey",
             src: "songs/Journey - Faithfully (Lyricis).mp3",
@@ -757,10 +779,8 @@
         };
 
         const togglePlay = () => {
-          // Always ensure the audio source is set
           if (!audio.src || audio.src !== songs[currentIndex.value]?.src) {
             loadAudio(currentIndex.value);
-            // Small delay to allow audio to load
             setTimeout(() => {
               if (playing.value) {
                 pause();
@@ -789,8 +809,11 @@
             currentIndex.value = (currentIndex.value + 1) % songs.length;
           }
           loadAudio(currentIndex.value);
-          if (playing.value) play();
-          showToast('Next track');
+          // Auto-play when manually skipping
+          setTimeout(() => {
+            play();
+          }, 100);
+          showToast(shuffle.value ? 'Shuffle next' : 'Next track');
         };
 
         const prevSong = () => {
@@ -801,14 +824,16 @@
             currentIndex.value = (currentIndex.value - 1 + songs.length) % songs.length;
           }
           loadAudio(currentIndex.value);
-          if (playing.value) play();
+          // Auto-play when going to previous song
+          setTimeout(() => {
+            play();
+          }, 100);
           showToast('Previous track');
         };
 
         const selectSong = (idx) => {
           currentIndex.value = idx;
           loadAudio(idx);
-          // Use a small delay to ensure the audio is loaded before playing
           setTimeout(() => {
             play();
           }, 100);
@@ -830,12 +855,12 @@
 
         const toggleShuffle = () => {
           shuffle.value = !shuffle.value;
-          showToast(shuffle.value ? 'Shuffle on' : 'Shuffle off');
+          showToast(shuffle.value ? '🔀 Shuffle on' : 'Shuffle off');
         };
 
         const toggleRepeat = () => {
           repeat.value = !repeat.value;
-          showToast(repeat.value ? 'Repeat on' : 'Repeat off');
+          showToast(repeat.value ? '🔁 Repeat on' : 'Repeat off');
         };
 
         const openModal = (name) => {
@@ -867,7 +892,20 @@
               audio.currentTime = 0;
               play();
             } else {
-              nextSong();
+              // When song ends, go to next and auto-play
+              if (shuffle.value) {
+                let next = Math.floor(Math.random() * songs.length);
+                if (next === currentIndex.value && songs.length > 1) {
+                  next = (next + 1) % songs.length;
+                }
+                currentIndex.value = next;
+              } else {
+                currentIndex.value = (currentIndex.value + 1) % songs.length;
+              }
+              loadAudio(currentIndex.value);
+              setTimeout(() => {
+                play();
+              }, 100);
             }
           });
           audio.addEventListener('play', () => { playing.value = true; });
