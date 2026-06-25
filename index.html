@@ -779,18 +779,7 @@
         };
 
         const togglePlay = () => {
-          if (!audio.src || audio.src !== songs[currentIndex.value]?.src) {
-            loadAudio(currentIndex.value);
-            setTimeout(() => {
-              if (playing.value) {
-                pause();
-              } else {
-                play();
-              }
-            }, 50);
-            return;
-          }
-          
+          // Simple play/pause toggle - don't reload the audio
           if (playing.value) {
             pause();
           } else {
