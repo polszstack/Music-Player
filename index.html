@@ -98,7 +98,6 @@
       border: none;
     }
     
-    /* Enhanced shuffle button styles */
     .shuffle-active {
       background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
       box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
@@ -298,7 +297,38 @@
 
     createApp({
       setup() {
+        // Merged song list with all songs from both branches
         const songs = [
+          {
+            title: "Gusto Ko Sakin Ka Lang",
+            artist: "Robledo Timido",
+            src: "songs/gusto_ko_sakin_ka_lang.mp3",
+            cover: "pictures/gusto_ko_sakin_ka_lang.jpg"
+          },
+          {
+            title: "Dominga",
+            artist: "La Mave & Nateman",
+            src: "songs/dominga.mp3",
+            cover: "pictures/dominga.jpg"
+          },
+          {
+            title: "Hinahanap Ng Puso",
+            artist: "Gloc 9 (feat. Hannah Romawac)",
+            src: "songs/hinahanap_ng_puso.mp3",
+            cover: "pictures/hinahanap_ng_puso.jpg"
+          },
+          {
+            title: "Materyal",
+            artist: "Shanti Dope",
+            src: "songs/materyal.mp3",
+            cover: "pictures/materyal.jpg"
+          },
+          {
+            title: "Maikee's Letters",
+            artist: "Just Hush",
+            src: "songs/maikes_letter.mp3",
+            cover: "pictures/maikes_letters.jpg"
+          },
           {
             title: "Lakas Tama",
             artist: "Mike kosa (feat. Ayeeman)",
