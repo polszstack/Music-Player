@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-  <!DOCTYPE html>
-=======
- <!DOCTYPE html>
->>>>>>> 3d819d322a001d44d3494fefa35c6a3236cfee23
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -303,36 +299,7 @@
     createApp({
       setup() {
         const songs = [
-<<<<<<< HEAD
-             {
-            title: "Gusto Ko Sakin Ka Lang",
-            artist: "Robledo Timido",
-            src: "songs/gusto_ko_sakin_ka_lang.mp3",
-            cover: "pictures/gusto_ko_sakin_ka_lang.jpg"
-          },{
-            title: "Dominga",
-            artist: "La Mave & Nateman",
-            src: "songs/dominga.mp3",
-            cover: "pictures/dominga.jpg"
-          },{
-            title: "Hinahanap Ng Puso",
-            artist: "Gloc 9 (feat. Hannah Romawac)",
-            src: "songs/hinahanap_ng_puso.mp3",
-            cover: "pictures/hinahanap_ng_puso.jpg"
-          },{
-            title: "Materyal",
-            artist: "Shanti Dope",
-            src: "songs/materyal.mp3",
-            cover: "pictures/materyal.jpg"
-          },{
-            title: "Maikee's Letters",
-            artist: "Just Hush",
-            src: "songs/maikes_letter.mp3",
-            cover: "pictures/maikes_letters.jpg"
-          },{
-=======
           {
->>>>>>> 3d819d322a001d44d3494fefa35c6a3236cfee23
             title: "Lakas Tama",
             artist: "Mike kosa (feat. Ayeeman)",
             src: "songs/lakas_tama.mp3",
@@ -864,7 +831,6 @@
         };
 
         const togglePlay = () => {
-          // Simple play/pause toggle - don't reload the audio
           if (playing.value) {
             pause();
           } else {
@@ -883,7 +849,6 @@
             currentIndex.value = (currentIndex.value + 1) % songs.length;
           }
           loadAudio(currentIndex.value);
-          // Auto-play when manually skipping
           setTimeout(() => {
             play();
           }, 100);
@@ -898,7 +863,6 @@
             currentIndex.value = (currentIndex.value - 1 + songs.length) % songs.length;
           }
           loadAudio(currentIndex.value);
-          // Auto-play when going to previous song
           setTimeout(() => {
             play();
           }, 100);
@@ -948,7 +912,6 @@
           audio.volume = volume.value;
           loadAudio(currentIndex.value);
 
-          // Auto-open playlist modal on first load
           nextTick(() => {
             if (isFirstLoad.value) {
               openModal('playlist');
@@ -966,7 +929,6 @@
               audio.currentTime = 0;
               play();
             } else {
-              // When song ends, go to next and auto-play
               if (shuffle.value) {
                 let next = Math.floor(Math.random() * songs.length);
                 if (next === currentIndex.value && songs.length > 1) {
