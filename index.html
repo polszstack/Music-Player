@@ -30,16 +30,60 @@
   <script src="https://unpkg.com/vue@3/dist/vue.global.js">
   </script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * {
       -webkit-tap-highlight-color: transparent;
     }
     
     body {
-      background: #000000;
-      font-family: 'Circular', 'Helvetica Neue', 'Arial', sans-serif;
+      background: radial-gradient(ellipse 120% 60% at 50% -10%, #0f2318 0%, #000000 55%);
+      font-family: 'Inter', 'Helvetica Neue', 'Arial', sans-serif;
       user-select: none;
       -webkit-user-select: none;
+    }
+
+    .font-display {
+      font-family: 'Space Grotesk', 'Inter', sans-serif;
+      letter-spacing: -0.01em;
+    }
+
+    /* Now-playing equalizer */
+    .eq-bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+      height: 11px;
+    }
+
+    .eq-bars span {
+      width: 3px;
+      border-radius: 1px;
+      background: #1ed760;
+      display: block;
+      animation: eq 0.85s ease-in-out infinite;
+    }
+
+    .eq-bars span:nth-child(1) { animation-delay: 0s; }
+    .eq-bars span:nth-child(2) { animation-delay: 0.2s; }
+    .eq-bars span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes eq {
+      0%, 100% { height: 3px; }
+      50% { height: 11px; }
+    }
+
+    /* Splash gate */
+    .splash-card {
+      background: linear-gradient(160deg, #181818 0%, #0c0c0c 100%);
+      border: 1px solid #282828;
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(30, 215, 96, 0.04);
+    }
+
+    .splash-icon {
+      background: radial-gradient(circle at 35% 30%, rgba(30, 215, 96, 0.25), rgba(30, 215, 96, 0.03) 70%);
     }
     
     .scrollbar-hide::-webkit-scrollbar {
@@ -150,9 +194,27 @@
 <body class="bg-black text-white flex items-center justify-center min-h-screen p-0 sm:p-4 font-sans antialiased">
   <div id="app" class="w-full max-w-md mx-auto bg-spotify-bg min-h-screen sm:min-h-0 sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-[#282828] relative">
 
+    <!-- Launch Splash: lets the visitor know this is a personal project kept alive with small updates -->
+    <transition name="fade">
+      <div v-if="showSplash" class="fixed inset-0 z-[200] flex items-center justify-center bg-black/85 backdrop-blur-md px-6">
+        <div class="splash-card w-full max-w-xs rounded-2xl p-7 text-center">
+          <div class="splash-icon w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fab fa-github text-2xl text-spotify-green"></i>
+          </div>
+          <h3 class="font-display text-lg font-bold text-white mb-2">Just keeping things fresh</h3>
+          <p class="text-sm text-spotify-subtitle leading-relaxed mb-6">
+            This is a personal project — it gets small tweaks now and then to keep the GitHub history active. Everything still works, so press play and enjoy.
+          </p>
+          <button @click="dismissSplash" class="w-full py-2.5 rounded-full bg-spotify-green hover:bg-spotify-green-hover text-black text-sm font-bold transition control-btn">
+            OK, got it
+          </button>
+        </div>
+      </div>
+    </transition>
+
     <!-- Header (Spotify Style) -->
     <header class="flex items-center justify-between px-4 pt-4 pb-1 z-10">
-      <span class="text-lg font-bold tracking-tight text-white select-none">Harmony</span>
+      <span class="font-display text-lg font-bold tracking-tight text-white select-none">Harmony</span>
       <div class="flex items-center gap-2">
         <button @click="openModal('notifications')" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-spotify-hover transition text-spotify-subtitle hover:text-white relative">
           <i class="fas fa-bell text-sm"></i>
@@ -169,13 +231,13 @@
       <div class="w-full aspect-square rounded-lg overflow-hidden bg-spotify-card shadow-2xl mx-auto relative group">
         <img :src="currentSong.cover" alt="cover" class="w-full h-full object-cover transition-transform duration-600 group-hover:scale-105" />
         <div class="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
-        <span v-if="playing" class="absolute bottom-3 right-3 bg-black/70 backdrop-blur-sm text-xs px-3 py-1.5 rounded-full text-white flex items-center gap-1.5 border border-white/10">
-          <span class="w-1.5 h-1.5 bg-spotify-green rounded-full animate-pulse"></span> NOW PLAYING
+        <span v-if="playing" class="absolute bottom-3 right-3 bg-black/70 backdrop-blur-sm text-xs px-3 py-1.5 rounded-full text-white flex items-center gap-2 border border-white/10 tracking-wide">
+          <span class="eq-bars"><span></span><span></span><span></span></span> NOW PLAYING
         </span>
       </div>
 
       <div class="mt-4 text-left px-1">
-        <h2 class="text-xl font-bold truncate text-white leading-tight">{{ currentSong.title }}</h2>
+        <h2 class="font-display text-xl font-bold truncate text-white leading-tight">{{ currentSong.title }}</h2>
         <p class="text-sm text-spotify-subtitle mt-1 truncate hover:underline cursor-pointer transition hover:text-white">{{ currentSong.artist || 'Unknown Artist' }}</p>
       </div>
     </div>
@@ -258,7 +320,7 @@
           <!-- Playlist Modal (Spotify Card Style) -->
           <div v-if="activeModal === 'playlist'" class="flex flex-col h-full overflow-hidden">
             <div class="flex-shrink-0 mb-4">
-              <h3 class="text-2xl font-bold mb-1">Your Library</h3>
+              <h3 class="font-display text-2xl font-bold mb-1">Your Library</h3>
               <p class="text-sm text-spotify-subtitle flex items-center gap-1">
                 <i class="fas fa-music text-xs text-spotify-green"></i> {{ songs.length }} songs
               </p>
@@ -270,7 +332,8 @@
                   <div class="text-sm font-medium truncate" :class="idx === currentIndex ? 'text-spotify-green' : 'text-white'">{{ song.title }}</div>
                   <div class="text-xs text-spotify-subtitle truncate">{{ song.artist || 'Unknown' }}</div>
                 </div>
-                <span class="text-xs text-spotify-muted flex-shrink-0">4:20</span>
+                <i v-if="idx === currentIndex && playing" class="fas fa-volume-up text-spotify-green text-xs flex-shrink-0"></i>
+                <i v-else-if="idx === currentIndex" class="fas fa-pause text-spotify-green text-xs flex-shrink-0"></i>
               </div>
             </div>
           </div>
@@ -291,7 +354,7 @@
           <!-- Notifications Modal -->
           <div v-else-if="activeModal === 'notifications'" class="flex flex-col h-full overflow-hidden">
             <div class="flex-shrink-0 mb-4">
-              <h3 class="text-2xl font-bold mb-1">What's New</h3>
+              <h3 class="font-display text-2xl font-bold mb-1">What's New</h3>
               <p class="text-sm text-spotify-subtitle">Latest updates</p>
             </div>
             <div class="space-y-3 overflow-y-auto flex-1 scrollbar-hide" style="overscroll-behavior: contain;">
@@ -321,6 +384,12 @@
     createApp({
       setup() {
         const songs = [
+          { title: "Co-Pilot", artist: "Just Hush", src: "songs/co_pilot.mp3", cover: "pictures/iraya.jpg" },
+          { title: "Buko", artist: "Jireh Lim", src: "songs/buko.mp3", cover: "pictures/buko.jpg" },
+          { title: "Aphrodite", artist: "The Ridleys", src: "songs/aphrodite.mp3", cover: "pictures/aphrodite.jpg" },
+          { title: "Harana", artist: "Jnske, MC Einstein, Bullet D, Flow G", src: "songs/harana.mp3", cover: "pictures/harana.jpg" },
+          { title: "Tanan", artist: "VNCE", src: "songs/tanan.mp3", cover: "pictures/tanan.jpg" },
+          { title: "Iraya", artist: "Just Hush", src: "songs/iraya.mp3", cover: "pictures/iraya.jpg" },
           { title: "In My Head", artist: "Jason Derulo", src: "songs/in_my_head.mp3", cover: "pictures/in_my_head.jpg" },
           { title: "2012", artist: "Jay Sean ft.Nicki Minaj ", src: "songs/2012.mp3", cover: "pictures/2012.jpg" },
           { title: "Play Hard", artist: "David Guetta  ft. Ne-Yo, Akon", src: "songs/play_hard.mp3", cover: "pictures/play_hard.jpg" },
@@ -432,7 +501,12 @@
         const toastMessage = ref('');
         const activeModal = ref(null);
         const isFirstLoad = ref(true);
+        const showSplash = ref(true);
         let toastTimer = null;
+
+        const dismissSplash = () => {
+          showSplash.value = false;
+        };
 
         const currentSong = computed(() => songs[currentIndex.value] || songs[0]);
         const progressPercent = computed(() => {
@@ -562,9 +636,9 @@
 
         return {
           songs, currentIndex, currentSong, playing, currentTime, duration, volume,
-          shuffle, repeat, toastMessage, activeModal, progressPercent,
+          shuffle, repeat, toastMessage, activeModal, progressPercent, showSplash,
           formatTime, togglePlay, nextSong, prevSong, selectSong, setProgress,
-          setVolume, toggleShuffle, toggleRepeat, openModal,
+          setVolume, toggleShuffle, toggleRepeat, openModal, dismissSplash,
         };
       }
     }).mount('#app');
