@@ -50,7 +50,6 @@
       letter-spacing: -0.01em;
     }
 
-    /* Now-playing equalizer */
     .eq-bars {
       display: flex;
       align-items: flex-end;
@@ -75,7 +74,6 @@
       50% { height: 11px; }
     }
 
-    /* Splash gate */
     .splash-card {
       background: linear-gradient(160deg, #181818 0%, #0c0c0c 100%);
       border: 1px solid #282828;
@@ -126,7 +124,6 @@
       }
     }
     
-    /* Spotify-like range slider */
     input[type="range"] {
       -webkit-appearance: none;
       appearance: none;
@@ -172,7 +169,6 @@
       transform: scale(0.93);
     }
     
-    /* Card hover effect */
     .song-row {
       transition: background 0.2s ease;
     }
@@ -189,12 +185,23 @@
       background: #1ed760;
       box-shadow: 0 0 6px rgba(30, 215, 96, 0.6);
     }
+
+    .splash-project-link {
+      transition: all 0.2s ease;
+      background: #1e1e1e;
+      border: 1px solid #333;
+    }
+    .splash-project-link:hover {
+      background: #282828;
+      border-color: #1ed760;
+      transform: translateY(-1px);
+    }
   </style>
 </head>
 <body class="bg-black text-white flex items-center justify-center min-h-screen p-0 sm:p-4 font-sans antialiased">
   <div id="app" class="w-full max-w-md mx-auto bg-spotify-bg min-h-screen sm:min-h-0 sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-[#282828] relative">
 
-    <!-- Launch Splash: lets the visitor know this is a personal project kept alive with small updates -->
+    <!-- Launch Splash: personal project + Photo Booth card -->
     <transition name="fade">
       <div v-if="showSplash" class="fixed inset-0 z-[200] flex items-center justify-center bg-black/85 backdrop-blur-md px-6">
         <div class="splash-card w-full max-w-xs rounded-2xl p-7 text-center">
@@ -202,9 +209,23 @@
             <i class="fab fa-github text-2xl text-spotify-green"></i>
           </div>
           <h3 class="font-display text-lg font-bold text-white mb-2">Just keeping things fresh</h3>
-          <p class="text-sm text-spotify-subtitle leading-relaxed mb-6">
+          <p class="text-sm text-spotify-subtitle leading-relaxed mb-4">
             This is a personal project — it gets small tweaks now and then to keep the GitHub history active. Everything still works, so press play and enjoy.
           </p>
+
+          <!-- NEW: Photo Booth project card -->
+          <a href="https://photo-booth-clean.vercel.app/" target="_blank" 
+             class="splash-project-link block rounded-xl p-3 mb-5 text-left flex items-center gap-3 transition">
+            <div class="w-10 h-10 rounded-full bg-spotify-green/10 flex items-center justify-center flex-shrink-0">
+              <i class="fas fa-camera-retro text-spotify-green text-lg"></i>
+            </div>
+            <div>
+              <div class="text-sm font-semibold text-white">📸 Photo Booth</div>
+              <div class="text-xs text-spotify-subtitle">Check it out now →</div>
+            </div>
+            <i class="fas fa-arrow-right text-spotify-subtitle text-xs ml-auto"></i>
+          </a>
+
           <button @click="dismissSplash" class="w-full py-2.5 rounded-full bg-spotify-green hover:bg-spotify-green-hover text-black text-sm font-bold transition control-btn">
             OK, got it
           </button>
@@ -212,7 +233,7 @@
       </div>
     </transition>
 
-    <!-- Header (Spotify Style) -->
+    <!-- Header -->
     <header class="flex items-center justify-between px-4 pt-4 pb-1 z-10">
       <span class="font-display text-lg font-bold tracking-tight text-white select-none">Harmony</span>
       <div class="flex items-center gap-2">
@@ -226,7 +247,7 @@
       </div>
     </header>
 
-    <!-- Album Art (Spotify Style - Rounded edges) -->
+    <!-- Album Art -->
     <div class="px-6 mt-1 mb-3">
       <div class="w-full aspect-square rounded-lg overflow-hidden bg-spotify-card shadow-2xl mx-auto relative group">
         <img :src="currentSong.cover" alt="cover" class="w-full h-full object-cover transition-transform duration-600 group-hover:scale-105" />
@@ -242,7 +263,7 @@
       </div>
     </div>
 
-    <!-- Progress Bar (Spotify Style) -->
+    <!-- Progress Bar -->
     <div class="px-6 mt-2">
       <div class="w-full h-1 bg-spotify-hover rounded-full cursor-pointer relative group" @click="setProgress" ref="progressArea">
         <div class="h-full rounded-full progress-bar relative flex items-center" :style="{ width: progressPercent + '%', background: 'linear-gradient(to right, #ffffff, #1ed760)' }">
@@ -255,10 +276,10 @@
       </div>
     </div>
 
-    <!-- Controls (Spotify Style - Green play button) -->
+    <!-- Controls -->
     <div class="flex items-center justify-between px-8 mt-5">
       <button @click="toggleShuffle" 
-              class="w-9 h-9 flex items-center justify-center rounded-full transition control-btn"
+              class="w-9 h-9 flex items-center justify-center rounded-full transition control-btn relative"
               :class="shuffle ? 'text-spotify-green' : 'text-spotify-subtitle hover:text-white'"
               title="Shuffle">
         <i class="fas fa-random text-lg"></i>
@@ -288,7 +309,7 @@
       </button>
     </div>
 
-    <!-- Bottom actions (volume + queue) -->
+    <!-- Bottom actions -->
     <div class="flex items-center justify-between px-6 mt-6 mb-4">
       <div class="flex items-center gap-2 w-28">
         <i class="fas fa-volume-up text-spotify-subtitle text-sm w-5"></i>
@@ -300,7 +321,7 @@
       </button>
     </div>
 
-    <!-- Toast (Spotify Style) -->
+    <!-- Toast -->
     <transition name="fade">
       <div v-if="toastMessage" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-spotify-hover text-white text-sm px-5 py-2.5 rounded-full shadow-2xl border border-white/10 z-50 flex items-center gap-2 backdrop-blur-md">
         <i class="fas fa-check-circle text-spotify-green text-xs"></i>
@@ -308,7 +329,7 @@
       </div>
     </transition>
 
-    <!-- Overlay / Modals (Spotify Dark Style) -->
+    <!-- Modals -->
     <transition name="slide">
       <div v-if="activeModal" class="fixed inset-0 z-40 flex items-end sm:items-center justify-center bg-black/80 backdrop-blur-sm px-0 sm:px-4" @click.self="activeModal = null">
         <div class="bg-spotify-bg w-full max-w-md rounded-t-2xl sm:rounded-2xl p-5 flex flex-col shadow-2xl border border-spotify-hover relative mobile-safe" :style="activeModal === 'playlist' ? 'height: 85vh; max-height: 85vh;' : 'max-height: 85vh;'" @click.stop>
@@ -317,7 +338,7 @@
             <i class="fas fa-times text-sm"></i>
           </button>
 
-          <!-- Playlist Modal (Spotify Card Style) -->
+          <!-- Playlist Modal -->
           <div v-if="activeModal === 'playlist'" class="flex flex-col h-full overflow-hidden">
             <div class="flex-shrink-0 mb-4">
               <h3 class="font-display text-2xl font-bold mb-1">Your Library</h3>
@@ -343,8 +364,6 @@
             <div class="w-24 h-24 rounded-full bg-spotify-card mb-4 flex items-center justify-center flex-shrink-0 border-2 border-spotify-hover">
               <i class="fas fa-user-astronaut text-4xl text-spotify-subtitle"></i>
             </div>
-             
-             
             <div class="flex gap-4 mt-5 mb-4">
               <a href="https://github.com/P4blo0o0" class="w-10 h-10 rounded-full bg-spotify-hover flex items-center justify-center text-white hover:bg-spotify-press transition"><i class="fab fa-github"></i></a>
               <a href="#" class="w-10 h-10 rounded-full bg-spotify-hover flex items-center justify-center text-white hover:bg-spotify-press transition"><i class="fab fa-twitter"></i></a>
@@ -366,7 +385,6 @@
                 <h4 class="font-bold text-sm text-white">Reminder</h4>
                 <p class="text-xs text-spotify-subtitle mt-1">Limited uploads at a time.</p>
               </div>
-               
               <div class="bg-spotify-card p-4 rounded-xl border-l-4 border-spotify-muted">
                 <h4 class="font-bold text-sm text-white">New Feature 🎵</h4>
                 <p class="text-xs text-spotify-subtitle mt-1">Playlist auto-opens. Pick a song!</p>
