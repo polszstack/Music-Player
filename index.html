@@ -75,6 +75,26 @@
       50% { height: 11px; }
     }
 
+    /* Loading spinner */
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .loading-spinner {
+      animation: spin 0.8s linear infinite;
+    }
+
+    /* Loading pulse for progress bar */
+    @keyframes pulse-bar {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 1; }
+    }
+
+    .loading-bar {
+      animation: pulse-bar 1.5s ease-in-out infinite;
+    }
+
     /* Splash gate */
     .splash-card {
       background: linear-gradient(160deg, #181818 0%, #0c0c0c 100%);
@@ -195,6 +215,12 @@
       aspect-ratio: 1;
       background: #181818;
     }
+
+    /* Loading overlay */
+    .loading-overlay {
+      background: rgba(18, 18, 18, 0.7);
+      backdrop-filter: blur(4px);
+    }
   </style>
 </head>
 <body class="bg-black text-white flex items-center justify-center min-h-screen p-0 sm:p-4 font-sans antialiased">
@@ -237,7 +263,18 @@
       <div class="w-full aspect-square rounded-lg overflow-hidden bg-spotify-card shadow-2xl mx-auto relative group">
         <img :src="currentSong.cover" alt="cover" class="w-full h-full object-cover transition-transform duration-600 group-hover:scale-105" />
         <div class="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
-        <span v-if="playing" class="absolute bottom-3 right-3 bg-black/70 backdrop-blur-sm text-xs px-3 py-1.5 rounded-full text-white flex items-center gap-2 border border-white/10 tracking-wide">
+        
+        <!-- Loading overlay on album art -->
+        <transition name="fade">
+          <div v-if="isLoading" class="absolute inset-0 loading-overlay flex items-center justify-center">
+            <div class="flex flex-col items-center gap-3">
+              <div class="w-10 h-10 border-2 border-spotify-green border-t-transparent rounded-full loading-spinner"></div>
+              <span class="text-xs text-spotify-subtitle font-medium">Loading...</span>
+            </div>
+          </div>
+        </transition>
+
+        <span v-if="playing && !isLoading" class="absolute bottom-3 right-3 bg-black/70 backdrop-blur-sm text-xs px-3 py-1.5 rounded-full text-white flex items-center gap-2 border border-white/10 tracking-wide">
           <span class="eq-bars"><span></span><span></span><span></span></span> NOW PLAYING
         </span>
       </div>
@@ -245,18 +282,28 @@
       <div class="mt-4 text-left px-1">
         <h2 class="font-display text-xl font-bold truncate text-white leading-tight">{{ currentSong.title }}</h2>
         <p class="text-sm text-spotify-subtitle mt-1 truncate hover:underline cursor-pointer transition hover:text-white">{{ currentSong.artist || 'Unknown Artist' }}</p>
+        
+        <!-- Loading indicator next to song title -->
+        <div v-if="isLoading" class="flex items-center gap-2 mt-2">
+          <div class="w-3 h-3 border-2 border-spotify-green border-t-transparent rounded-full loading-spinner"></div>
+          <span class="text-xs text-spotify-green">Buffering...</span>
+        </div>
       </div>
     </div>
 
     <!-- Progress Bar (Spotify Style) -->
     <div class="px-6 mt-2">
       <div class="w-full h-1 bg-spotify-hover rounded-full cursor-pointer relative group" @click="setProgress" ref="progressArea">
-        <div class="h-full rounded-full progress-bar relative flex items-center" :style="{ width: progressPercent + '%', background: 'linear-gradient(to right, #ffffff, #1ed760)' }">
+        <!-- Loading progress bar animation -->
+        <div v-if="isLoading" class="h-full rounded-full loading-bar" style="width: 30%; background: linear-gradient(to right, #1ed760, #1fdf64);"></div>
+        <!-- Normal progress bar -->
+        <div v-else class="h-full rounded-full progress-bar relative flex items-center" :style="{ width: progressPercent + '%', background: 'linear-gradient(to right, #ffffff, #1ed760)' }">
           <div class="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-md opacity-0 group-hover:opacity-100 transition"></div>
         </div>
       </div>
       <div class="flex justify-between text-xs text-spotify-muted mt-1.5 font-medium">
-        <span>{{ formatTime(currentTime) }}</span>
+        <span v-if="!isLoading">{{ formatTime(currentTime) }}</span>
+        <span v-else class="text-spotify-green">--:--</span>
         <span>{{ formatTime(duration) }}</span>
       </div>
     </div>
@@ -272,15 +319,18 @@
       </button>
 
       <div class="flex items-center gap-6">
-        <button @click="prevSong" class="w-9 h-9 flex items-center justify-center rounded-full text-spotify-subtitle hover:text-white control-btn">
+        <button @click="prevSong" :disabled="isLoading" class="w-9 h-9 flex items-center justify-center rounded-full text-spotify-subtitle hover:text-white control-btn" :class="isLoading ? 'opacity-50 cursor-not-allowed' : ''">
           <i class="fas fa-step-backward text-xl"></i>
         </button>
 
-        <button @click="togglePlay" class="w-14 h-14 flex items-center justify-center rounded-full bg-white text-black hover:scale-105 transition-transform shadow-xl shadow-black/30 control-btn">
-          <i class="fas text-lg" :class="playing ? 'fa-pause' : 'fa-play'"></i>
+        <!-- Play/Pause button with loading state -->
+        <button @click="togglePlay" :disabled="isLoading" class="w-14 h-14 flex items-center justify-center rounded-full bg-white text-black hover:scale-105 transition-transform shadow-xl shadow-black/30 control-btn relative" :class="isLoading ? 'opacity-70 cursor-wait' : ''">
+          <!-- Loading spinner replaces icon when loading -->
+          <div v-if="isLoading" class="w-6 h-6 border-2 border-black border-t-transparent rounded-full loading-spinner"></div>
+          <i v-else class="fas text-lg" :class="playing ? 'fa-pause' : 'fa-play'"></i>
         </button>
 
-        <button @click="nextSong" class="w-9 h-9 flex items-center justify-center rounded-full text-spotify-subtitle hover:text-white control-btn">
+        <button @click="nextSong" :disabled="isLoading" class="w-9 h-9 flex items-center justify-center rounded-full text-spotify-subtitle hover:text-white control-btn" :class="isLoading ? 'opacity-50 cursor-not-allowed' : ''">
           <i class="fas fa-step-forward text-xl"></i>
         </button>
       </div>
@@ -338,7 +388,10 @@
                   <div class="text-sm font-medium truncate" :class="idx === currentIndex ? 'text-spotify-green' : 'text-white'">{{ song.title }}</div>
                   <div class="text-xs text-spotify-subtitle truncate">{{ song.artist || 'Unknown' }}</div>
                 </div>
-                <i v-if="idx === currentIndex && playing" class="fas fa-volume-up text-spotify-green text-xs flex-shrink-0"></i>
+                <div v-if="idx === currentIndex && isLoading" class="flex-shrink-0">
+                  <div class="w-4 h-4 border-2 border-spotify-green border-t-transparent rounded-full loading-spinner"></div>
+                </div>
+                <i v-else-if="idx === currentIndex && playing" class="fas fa-volume-up text-spotify-green text-xs flex-shrink-0"></i>
                 <i v-else-if="idx === currentIndex" class="fas fa-pause text-spotify-green text-xs flex-shrink-0"></i>
               </div>
             </div>
@@ -522,8 +575,10 @@
         const activeModal = ref(null);
         const isFirstLoad = ref(true);
         const showSplash = ref(true);
+        const isLoading = ref(false);
         let toastTimer = null;
         let playAttemptTimeout = null;
+        let loadingTimeout = null;
 
         const dismissSplash = () => {
           showSplash.value = false;
@@ -549,6 +604,21 @@
           toastTimer = setTimeout(() => { toastMessage.value = ''; }, 2000);
         };
 
+        // Show loading state
+        const showLoading = () => {
+          clearTimeout(loadingTimeout);
+          isLoading.value = true;
+        };
+
+        // Hide loading state
+        const hideLoading = () => {
+          clearTimeout(loadingTimeout);
+          // Add slight delay to prevent flickering
+          loadingTimeout = setTimeout(() => {
+            isLoading.value = false;
+          }, 300);
+        };
+
         // Preload a track in the background
         const preloadTrack = (index) => {
           if (index < 0 || index >= songs.length) return;
@@ -570,6 +640,9 @@
           // Clear any pending play attempt
           clearTimeout(playAttemptTimeout);
           
+          // Show loading state
+          showLoading();
+          
           // Reset state before loading
           playing.value = false;
           currentTime.value = 0;
@@ -588,18 +661,24 @@
             loadAudio(currentIndex.value);
           }
           
+          showLoading();
+          
           const playPromise = audio.play();
           
           if (playPromise !== undefined) {
             playPromise.then(() => {
               playing.value = true;
+              // Loading will be hidden when 'canplay' event fires
             }).catch((err) => {
               console.warn('Play prevented:', err);
+              hideLoading();
               // Retry once after a short delay
               playAttemptTimeout = setTimeout(() => {
+                showLoading();
                 audio.play().then(() => {
                   playing.value = true;
                 }).catch(() => {
+                  hideLoading();
                   showToast('Tap play to start');
                 });
               }, 200);
@@ -609,6 +688,7 @@
 
         const pause = () => {
           clearTimeout(playAttemptTimeout);
+          hideLoading();
           audio.pause();
           playing.value = false;
         };
@@ -628,7 +708,6 @@
           } else {
             currentIndex.value = (currentIndex.value + 1) % songs.length;
           }
-          // loadAudio is called by the watch, which now triggers play()
         };
 
         const prevSong = () => {
@@ -638,7 +717,6 @@
           } else {
             currentIndex.value = (currentIndex.value - 1 + songs.length) % songs.length;
           }
-          // loadAudio is called by the watch, which now triggers play()
         };
 
         const selectSong = (idx) => {
@@ -646,7 +724,6 @@
           currentIndex.value = idx;
           activeModal.value = null;
           showToast(`Now: ${songs[idx].title}`);
-          // loadAudio is called by the watch, which now triggers play()
         };
 
         const setProgress = (e) => {
@@ -696,6 +773,22 @@
             duration.value = audio.duration;
           });
           
+          // Hide loading when audio is ready to play
+          audio.addEventListener('canplay', () => {
+            hideLoading();
+          });
+          
+          // Show loading when audio is buffering
+          audio.addEventListener('waiting', () => {
+            showLoading();
+          });
+          
+          // Hide loading when audio starts playing after buffering
+          audio.addEventListener('playing', () => {
+            hideLoading();
+            playing.value = true;
+          });
+          
           audio.addEventListener('ended', () => {
             if (repeat.value) {
               audio.currentTime = 0;
@@ -713,16 +806,13 @@
             // Only set to false if it wasn't paused due to buffering
             if (audio.readyState < 3) return;
             playing.value = false;
-          });
-          
-          audio.addEventListener('waiting', () => {
-            // Show loading state if needed
-            console.log('Buffering...');
+            hideLoading();
           });
           
           audio.addEventListener('error', (e) => {
             console.error('Audio error:', e);
             playing.value = false;
+            hideLoading();
             showToast('⚠️ Failed to load track');
             
             // Auto-skip to next song on error after 2 seconds
@@ -732,13 +822,21 @@
               }
             }, 2000);
           });
+          
+          // Handle seeking
+          audio.addEventListener('seeking', () => {
+            showLoading();
+          });
+          
+          audio.addEventListener('seeked', () => {
+            hideLoading();
+          });
         });
 
-        // Fixed watch: now properly loads AND plays when index changes
+        // Watch for index changes to load and play new songs
         watch(currentIndex, (newIdx, oldIdx) => {
           if (newIdx !== oldIdx || !audio.src) {
             loadAudio(newIdx);
-            // Auto-play after loading
             nextTick(() => {
               setTimeout(() => play(), 150);
             });
@@ -759,6 +857,7 @@
           activeModal,
           progressPercent,
           showSplash,
+          isLoading,
           formatTime,
           togglePlay,
           nextSong,
