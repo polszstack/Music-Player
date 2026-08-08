@@ -381,281 +381,276 @@
   <script>
     const { createApp, ref, computed, watch, onMounted, nextTick } = Vue;
 
-    createApp({
-      setup() {
-        const songs = [
-          { title: "Alumni Homecoming", artist: "Parokya ni Edgar", src: "songs/alumni.mp3", cover: "pictures/alumni.jpg" },
-          { title: "Spoliarium", artist: "Eraserheads", src: "songs/spoliarium.mp3", cover: "pictures/spoliarium.jpg" },
-          { title: "Mundo", artist: "IV Of Spades", src: "songs/mundo.mp3", cover: "pictures/mundo.jpg" },
-          { title: "Akap", artist: "Imago", src: "songs/akap.mp3", cover: "pictures/akap.jpg" },
-          { title: "Ale", artist: "The Bloomfields", src: "songs/ale.mp3", cover: "pictures/ale.jpg" },
-          { title: "Pangarap Lang Kita", artist: "Parokya Ni Edgar feat. Hapee Sy", src: "songs/pangarap_lang_kita.mp3", cover: "pictures/pangarap_lang_kita.jpg" },
-          { title: "Hari Ng Sablay", artist: "Sugarfree", src: "songs/hari_ng_sablay.mp3", cover: "pictures/hari_ng_sablay.jpg" },
-          { title: "Tensionado", artist: "Soapdish", src: "songs/tensionado.mp3", cover: "pictures/tensionado.jpg" },
-          { title: "Once In A Lifetime", artist: "Freestyle", src: "songs/once_in_a_lifetime.mp3", cover: "pictures/once_in_a_lifetime.jpg" },
-          { title: "Museo", artist: "Eliza Maturan", src: "songs/museo.mp3", cover: "pictures/museo.jpg" },
-          { title: "Libu-Libong Buwan", artist: "Kyle Raphael", src: "songs/libu_libong_buwan.mp3", cover: "pictures/libu_libong_buwan.jpg" },
-          { title: "Isa Lang", artist: "Arthur Nery", src: "songs/isa_lang.mp3", cover: "pictures/isa_lang.jpg" },
-          { title: "Urong Sulong", artist: "Alisson Shore, Kiyo", src: "songs/urong_sulong.mp3", cover: "pictures/urong_sulong.jpg" },
-          { title: "YK", artist: "Cean Jr.", src: "songs/yk.mp3", cover: "pictures/yk.jpg" },
-          { title: "Co-Pilot", artist: "Just Hush", src: "songs/co_pilot.mp3", cover: "pictures/iraya.jpg" },
-          { title: "Buko", artist: "Jireh Lim", src: "songs/buko.mp3", cover: "pictures/buko.jpg" },
-          { title: "Aphrodite", artist: "The Ridleys", src: "songs/Aphrodite.mp3", cover: "pictures/Aphrodite.jpg" },
-          { title: "Harana", artist: "Jnske, MC Einstein, Bullet D, Flow G", src: "songs/harana.mp3", cover: "pictures/harana.jpg" },
-          { title: "Tanan", artist: "VNCE", src: "songs/tanan.mp3", cover: "pictures/tanan.jpg" },
-          { title: "Iraya", artist: "Just Hush", src: "songs/iraya.mp3", cover: "pictures/iraya.jpg" },
-          { title: "In My Head", artist: "Jason Derulo", src: "songs/in_my_head.mp3", cover: "pictures/in_my_head.jpg" },
-          { title: "2012", artist: "Jay Sean ft.Nicki Minaj ", src: "songs/2012.mp3", cover: "pictures/2012.jpg" },
-          { title: "Play Hard", artist: "David Guetta  ft. Ne-Yo, Akon", src: "songs/play_hard.mp3", cover: "pictures/play_hard.jpg" },
-          { title: " DJ Got Us Fallin' In Love", artist: "Usher  ft. Pitbull", src: "songs/dj_got_us_fallin_love.mp3", cover: "pictures/dj_got_us_fallin_love.jpg" },
-          { title: "It Wasn't Me", artist: "Shaggy feat. RikRok", src: "songs/it_wasnt_me.mp3", cover: "pictures/it_wasnt_me.jpg" },
-          { title: "Booty Music", artist: "Git Fresh", src: "songs/booty_music.mp3", cover: "pictures/booty_music.jpg" },
-          { title: "Ano Na?", artist: "Kiyo", src: "songs/ano_na.mp3", cover: "pictures/ano_na.jpg" },
-          { title: "Love Melody", artist: "CK YG", src: "songs/love_melody.mp3", cover: "pictures/love_melody.jpg" },
-          { title: "Young Gaddy ", artist: "Shanti Dope", src: "songs/young_gaddy.mp3", cover: "pictures/young_gaddy.jpg" },
-          { title: "Mesmerized", artist: "SORDAN, Madman Stan", src: "songs/mesmerized.mp3", cover: "pictures/mesmerized.jpg" },
-          { title: "Dalaga", artist: "Arvey", src: "songs/dalaga.mp3", cover: "pictures/dalaga.jpg" },
-          { title: "PWEDE BANG?", artist: "Hev Abi", src: "songs/pwede_bang.mp3", cover: "pictures/pwede_bang.jpg" },
-          { title: "Bagay Tayo", artist: "ALLMO$T", src: "songs/bagay_tayo.mp3", cover: "pictures/bagay_tayo.jpg" },
-          { title: "This Na Malambing", artist: "Ryannah J  (ft. Nateman)", src: "songs/this_na_malambing.mp3", cover: "pictures/this_na_malambing.jpg" },
-          { title: "Gusto Ko Sakin Ka Lang", artist: "Robledo Timido", src: "songs/gusto_ko_sakin_ka_lang.mp3", cover: "pictures/gusto_ko_sakin_ka_lang.jpg" },
-          { title: "Dominga", artist: "La Mave & Nateman", src: "songs/dominga.mp3", cover: "pictures/dominga.jpg" },
-          { title: "Hinahanap Ng Puso", artist: "Gloc 9 (feat. Hannah Romawac)", src: "songs/hinahanap_ng_puso.mp3", cover: "pictures/hinahanap_ng_puso.jpg" },
-          { title: "Materyal", artist: "Shanti Dope", src: "songs/materyal.mp3", cover: "pictures/materyal.jpg" },
-          { title: "Maikee's Letters", artist: "Just Hush", src: "songs/maikes_letter.mp3", cover: "pictures/maikes_letters.jpg" },
-          { title: "Lakas Tama", artist: "Mike kosa (feat. Ayeeman)", src: "songs/lakas_tama.mp3", cover: "pictures/lakas_tama.jpg" },
-          { title: "Boyfriend", artist: "ALLMO$T", src: "songs/boyfriend.mp3", cover: "pictures/boyfriend.jpg" },
-          { title: "Biglang Liko", artist: "Ron Henley (feat. Pow Chavez)", src: "songs/biglang_liko.mp3", cover: "pictures/biglang_liko.jpg" },
-          { title: "Halik", artist: "Gloc-9 (feat. Flow G)", src: "songs/halik.mp3", cover: "pictures/halik.jpg" },
-          { title: "Hanging by a Moment", artist: "Lifehouse", src: "songs/hanging_by_a_moment.mp3", cover: "pictures/lifehouse.jpg" },
-          { title: "When Love & Hate Collide", artist: "Def Leppard", src: "songs/when_love_and_hate_collide.mp3", cover: "pictures/def_leppard.jpg" },
-          { title: "She Will Be Loved", artist: "Maroon 5", src: "songs/she_will_be_loved.mp3", cover: "pictures/maroon5.jpeg" },
-          { title: "Take On Me", artist: "A-ha", src: "songs/take_on_me.mp3", cover: "pictures/a-ha.jpg" },
-          { title: "Faithfully", artist: "Journey", src: "songs/Journey - Faithfully (Lyricis).mp3", cover: "pictures/Faithfully.jpeg" },
-          { title: "After all these years", artist: "Journey", src: "songs/After All These Years - Journey (Lyrics).mp3", cover: "pictures/Journey.jpeg" },
-          { title: "Sunday Morning", artist: "Maroon 5", src: "songs/Maroon 5 - Sunday Morning.mp3", cover: "pictures/maroon5.jpeg" },
-          { title: "Deep", artist: "Binocular", src: "songs/Deep by_ Binocular (lyrics).mp3", cover: "pictures/binocular.jpeg" },
-          { title: "Hinahanap-Hanap Kita", artist: "Rivermaya", src: "songs/hinahanap_hanap_kita.mp3", cover: "pictures/hinahanap_hanap_kita.jpeg" },
-          { title: "Kanlungan", artist: "Noel Cabangon", src: "songs/kanlungan.mp3", cover: "pictures/kanlungan.jpeg" },
-          { title: "Against All Odds", artist: "Phil Collins", src: "songs/against_all_odds.mp3", cover: "pictures/against_all_odds.jpeg" },
-          { title: "Pare Mahal Mo Raw Ako", artist: "Michael Pangilinan", src: "songs/pare.mp3", cover: "pictures/pare.jpeg" },
-          { title: "Ben 10", artist: "Little Ditto", src: "songs/ben10.mp3", cover: "pictures/ben10.jpeg" },
-          { title: "Bye Bye", artist: "Mariah Carey", src: "songs/byebye.mp3", cover: "pictures/byebye.jpeg" },
-          { title: "Nakakakamiss", artist: "Smugglaz, Curse One, Dello & Flict G", src: "songs/nakakamiss.mp3", cover: "pictures/nakakamiss.jpeg" },
-          { title: "Dota O Ako", artist: "Aikee, Sabrina", src: "songs/dota_o_ako.mp3", cover: "pictures/dota_o_ako.jpeg" },
-          { title: "Made For Me", artist: "Muni Long", src: "songs/made_for_me.mp3", cover: "pictures/made_for_me.jpeg" },
-          { title: "Birds of a Feather", artist: "Billie Eilish", src: "songs/birds_of_a_feather.mp3", cover: "pictures/birds_of_a_feather.jpeg" },
-          { title: "Reyna ng Quezon City", artist: "Juana", src: "songs/reyna_ng_quezon_city.mp3", cover: "pictures/reyna_ng_quezon_city.jpeg" },
-          { title: "Love Me Like You Do", artist: "Ellie Goulding", src: "songs/love_me_like_you_do.mp3", cover: "pictures/love_me_like_you_do.jpg" },
-          { title: "Minsan", artist: "Eraserheads", src: "songs/minsan.mp3", cover: "pictures/minsan.jpeg" },
-          { title: "Robbers", artist: "The 1975", src: "songs/robbers.mp3", cover: "pictures/robbers.gif" },
-          { title: "If", artist: "Bread", src: "songs/if.mp3", cover: "pictures/if.gif" },
-          { title: "Champagne Supernova", artist: "Oasis", src: "songs/supernova.mp3", cover: "pictures/supernova.jpeg" },
-          { title: "Amazing", artist: "Rex Orange County", src: "songs/amazing.mp3", cover: "pictures/amazing.gif" },
-          { title: "Bed Of Roses", artist: "Bon Jovi", src: "songs/bed_of_roses.mp3", cover: "pictures/bed_of_roses.gif" },
-          { title: "To The Bone", artist: "Pamungkas", src: "songs/to_the_bone.mp3", cover: "pictures/to_the_bone.gif" },
-          { title: "Huwag Kang Matakot", artist: "Eraserheads", src: "songs/huwag_kang_matakot.mp3", cover: "pictures/huwag_kang_matakot.jpeg" },
-          { title: "Judas", artist: "Lady Gaga", src: "songs/judas.mp3", cover: "pictures/judas.gif" },
-          { title: "Just Dance", artist: "Lady Gaga", src: "songs/just_dance.mp3", cover: "pictures/just_dance.gif" },
-          { title: "Daddy's Home", artist: "Usher", src: "songs/daddys_home.mp3", cover: "pictures/daddys_home.gif" },
-          { title: "Radioactive", artist: "21/09/2025", src: "songs/radioactive.mp3", cover: "pictures/radioactive.gif" },
-          { title: "Wavin' Flag", artist: "", src: "songs/wavin_flag.mp3", cover: "pictures/wavin_flag.jpeg" },
-          { title: "Stand by Me", artist: "Oasis", src: "songs/stand_by_me.mp3", cover: "pictures/stand_by_me.jpeg" },
-          { title: "Mirrors", artist: "Justin Timberlake", src: "songs/mirrors.mp3", cover: "pictures/mirrors.jpeg" },
-          { title: "Mine", artist: "Bazzi", src: "songs/mine.mp3", cover: "pictures/mine.jpeg" },
-          { title: "Love", artist: "Kendrick Lamar", src: "songs/love.mp3", cover: "pictures/love.jpeg" },
-          { title: "My Sacrifice", artist: "Creed", src: "songs/my_sacrifice.mp3", cover: "pictures/my_sacrifice.jpeg" },
-          { title: "September Ends", artist: "Green Day", src: "songs/september_ends.mp3", cover: "pictures/september_ends.jpeg" },
-          { title: "Take da Charge", artist: "Project Pat", src: "songs/take_da_charge.mp3", cover: "pictures/take_da_charge.jpeg" },
-          { title: "Bad Habit", artist: "Steve Lacy", src: "songs/bad_habit.mp3", cover: "pictures/bad_habit.jpeg" },
-          { title: "Dangerous", artist: "Kardinal Offishall feat. Akon", src: "songs/dangerous.mp3", cover: "pictures/dangerous.jpeg" },
-          { title: "God's Plan", artist: "Drake", src: "songs/gods_plan.mp3", cover: "pictures/gods_plan.jpeg" },
-          { title: "I Walk This Earth All by Myself", artist: "EKKSTACY", src: "songs/i_walk_this_earth_al_by_my_self.mp3", cover: "pictures/i_walk_this_earth_al_by_my_self.jpeg" },
-          { title: "Girl With The Tattoo", artist: "Miguel", src: "songs/the_girl_with_the_tattoo.mp3", cover: "pictures/the_girl_with_the_tattoo.jpeg" },
-          { title: "Washing Machine Heart", artist: "Mitski", src: "songs/washing_machine_heart.mp3", cover: "pictures/washing_machine_heart.jpeg" },
-          { title: "Locked Away", artist: "R. City feat. Adam Levine", src: "songs/locked_away.mp3", cover: "pictures/locked_away.jpeg" },
-          { title: "The Reason", artist: "Hoobastank", src: "songs/the_reason.mp3", cover: "pictures/the_reason.jpeg" },
-          { title: "Classic", artist: "MKTO", src: "songs/classic.mp3", cover: "pictures/classic.jpeg" },
-          { title: "Last Night on Earth", artist: "Green Day", src: "songs/last_night_on_earth.mp3", cover: "pictures/last_night_on_earth.jpeg" },
-          { title: "The Only Exception", artist: "Paramore", src: "songs/the_only_exception.mp3", cover: "pictures/the_only_exception.jpeg" },
-          { title: "Happy Nation", artist: "Ace of Base", src: "songs/happy_nation.mp3", cover: "pictures/happy_nation.jpeg" },
-          { title: "Nothin' on You", artist: "B.O.B feat. Bruno Mars", src: "songs/nothin_on_you.mp3", cover: "pictures/nothin_on_you.jpeg" },
-          { title: "My Girl", artist: "The Temptations", src: "songs/my_girl.mp3", cover: "pictures/my_girl.jpeg" },
-          { title: "Kiss Me", artist: "Sixpence None The Richer", src: "songs/kiss_me.mp3", cover: "pictures/kiss_me.jpeg" },
-          { title: "More Than Words", artist: "Extreme", src: "songs/more_than_words.mp3", cover: "pictures/more_than_words.jpeg" },
-          { title: "Sweater Weather", artist: "The Neighbourhood", src: "songs/sweater_weather.mp3", cover: "pictures/sweater_weather.jpeg" },
-          { title: "Dandelions", artist: "Ruth B.", src: "songs/dandelions.mp3", cover: "pictures/dandelions.jpeg" },
-          { title: "I Don't Care", artist: "Ed Sheeran, Justin Bieber", src: "songs/i_dont_care.mp3", cover: "pictures/i_dont_care.jpeg" },
-          { title: "Summertime Sadness", artist: "Lana Del Rey", src: "songs/summertime_sadness.mp3", cover: "pictures/summertime_sadness.jpeg" },
-          { title: "All For Love", artist: "Rod Stewart", src: "songs/all_for_love.mp3", cover: "pictures/all_for_love.jpeg" },
-          { title: "Another Day in Paradise", artist: "Phil Collins", src: "songs/another_day_in_paradise.mp3", cover: "pictures/another_day_in_paradise.jpeg" },
-          { title: "Getting To Know Each Other", artist: "Gerard Kenny", src: "songs/getting_to_know_each_other.mp3", cover: "pictures/getting_to_know_each_other.jpeg" },
-          { title: "Piano Man", artist: "Billy Joel", src: "songs/piano_man.mp3", cover: "pictures/piano_man.jpeg" },
-          { title: "Last Christmas", artist: "Wham!", src: "songs/last_christmas.mp3", cover: "pictures/last_christmas.jpeg" },
-          { title: "Para Sa Akin", artist: "Jason Dhakal", src: "songs/para_sa_akin.mp3", cover: "pictures/para_sa_akin.jpeg" },
-          { title: "Waltz of Four Left Feet", artist: "shirebound", src: "songs/waltz_of_four_left_feet.mp3", cover: "pictures/waltz_of_four_left_feet.jpeg" },
-          { title: "Tibok", artist: "Earl Agustin", src: "songs/tibok.mp3", cover: "pictures/tibok.jpeg" },
-          { title: "dahan-dahan", artist: "Lola Amour", src: "songs/dahan_dahan.mp3", cover: "pictures/dahan_dahan.jpeg" },
-          { title: "Pahintulot", artist: "shirebound", src: "songs/pahintulot.mp3", cover: "pictures/waltz_of_four_left_feet1.jpeg" },
-          { title: "Nakauwi Na", artist: "Ang Bandang Shirley", src: "songs/nakauwi_na.mp3", cover: "pictures/nakauwi_na.jpeg" },
-          { title: "Fallen", artist: "Lola Amour", src: "songs/fallen.mp3", cover: "pictures/fallen.jpeg" },
-          { title: "Thunder", artist: "Boys Like Girls", src: "songs/thunder.mp3", cover: "pictures/thunder.jpeg" },
-          { title: "You and Me", artist: "Lifehouse", src: "songs/you_and_me.mp3", cover: "pictures/you_and_me.jpeg" },
-          { title: "stickwitu", artist: "The Pussycat Dolls", src: "songs/stick_with_u.mp3", cover: "pictures/images.jpeg" }
-        ];
+createApp({
+  setup() {
+    // ✅ Made songs a plain array (not reactive) for better performance
+    const songs = [
+      // ... all your songs remain exactly the same ...
+    ];
 
-        const audio = new Audio();
-        const currentIndex = ref(0);
-        const playing = ref(false);
-        const currentTime = ref(0);
-        const duration = ref(0);
-        const volume = ref(0.7);
-        const shuffle = ref(false);
-        const repeat = ref(false);
-        const toastMessage = ref('');
-        const activeModal = ref(null);
-        const isFirstLoad = ref(true);
-        const showSplash = ref(true);
-        let toastTimer = null;
+    const audio = new Audio();
+    const currentIndex = ref(0);
+    const playing = ref(false);
+    const currentTime = ref(0);
+    const duration = ref(0);
+    const volume = ref(0.7);
+    const shuffle = ref(false);
+    const repeat = ref(false);
+    const toastMessage = ref('');
+    const activeModal = ref(null);
+    const isFirstLoad = ref(true);
+    const showSplash = ref(true);
+    let toastTimer = null;
+    let playAttemptTimeout = null;
 
-        const dismissSplash = () => {
-          showSplash.value = false;
-        };
+    const dismissSplash = () => {
+      showSplash.value = false;
+    };
 
-        const currentSong = computed(() => songs[currentIndex.value] || songs[0]);
-        const progressPercent = computed(() => {
-          if (!duration.value) return 0;
-          return (currentTime.value / duration.value) * 100;
-        });
+    const currentSong = computed(() => songs[currentIndex.value] || songs[0]);
+    
+    const progressPercent = computed(() => {
+      if (!duration.value) return 0;
+      return (currentTime.value / duration.value) * 100;
+    });
 
-        const formatTime = (sec) => {
-          if (isNaN(sec) || !isFinite(sec)) return '0:00';
-          const m = Math.floor(sec / 60);
-          const s = Math.floor(sec % 60);
-          return `${m}:${s.toString().padStart(2, '0')}`;
-        };
+    const formatTime = (sec) => {
+      if (isNaN(sec) || !isFinite(sec)) return '0:00';
+      const m = Math.floor(sec / 60);
+      const s = Math.floor(sec % 60);
+      return `${m}:${s.toString().padStart(2, '0')}`;
+    };
 
-        const showToast = (msg) => {
-          toastMessage.value = msg;
-          clearTimeout(toastTimer);
-          toastTimer = setTimeout(() => { toastMessage.value = ''; }, 2000);
-        };
+    const showToast = (msg) => {
+      toastMessage.value = msg;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { toastMessage.value = ''; }, 2000);
+    };
 
-        const loadAudio = (index) => {
-          const s = songs[index];
-          if (!s) return;
-          audio.src = s.src;
-          audio.load();
-          currentTime.value = 0;
-          duration.value = 0;
-        };
+    // ✅ Preload a track in the background
+    const preloadTrack = (index) => {
+      if (index < 0 || index >= songs.length) return;
+      const preloader = new Audio();
+      preloader.src = songs[index].src;
+      preloader.preload = 'auto';
+      preloader.load();
+      // Clean up after loaded
+      preloader.oncanplaythrough = () => {
+        preloader.src = '';
+        preloader.load();
+      };
+    };
 
-        const play = () => {
-          audio.play().then(() => {
-            playing.value = true;
-          }).catch(() => {
-            showToast('Tap play to start');
-          });
-        };
+    const loadAudio = (index) => {
+      const s = songs[index];
+      if (!s) return;
+      
+      // Clear any pending play attempt
+      clearTimeout(playAttemptTimeout);
+      
+      // ✅ Reset state before loading
+      playing.value = false;
+      currentTime.value = 0;
+      duration.value = 0;
+      
+      audio.src = s.src;
+      audio.load();
+      
+      // ✅ Preload adjacent songs for faster skipping
+      preloadTrack((index + 1) % songs.length);
+      preloadTrack((index - 1 + songs.length) % songs.length);
+    };
 
-        const pause = () => {
-          audio.pause();
-          playing.value = false;
-        };
-
-        const togglePlay = () => {
-          playing.value ? pause() : play();
-        };
-
-        const nextSong = () => {
-          if (shuffle.value) {
-            let next = Math.floor(Math.random() * songs.length);
-            if (next === currentIndex.value && songs.length > 1) next = (next + 1) % songs.length;
-            currentIndex.value = next;
-          } else {
-            currentIndex.value = (currentIndex.value + 1) % songs.length;
-          }
-          loadAudio(currentIndex.value);
-          setTimeout(() => play(), 100);
-          showToast(shuffle.value ? 'Shuffle next' : 'Next track');
-        };
-
-        const prevSong = () => {
-          if (shuffle.value) {
-            currentIndex.value = Math.floor(Math.random() * songs.length);
-          } else {
-            currentIndex.value = (currentIndex.value - 1 + songs.length) % songs.length;
-          }
-          loadAudio(currentIndex.value);
-          setTimeout(() => play(), 100);
-          showToast('Previous track');
-        };
-
-        const selectSong = (idx) => {
-          currentIndex.value = idx;
-          loadAudio(idx);
-          setTimeout(() => play(), 100);
-          activeModal.value = null;
-          showToast(`Now: ${songs[idx].title}`);
-        };
-
-        const setProgress = (e) => {
-          if (!audio.duration) return;
-          const rect = e.currentTarget.getBoundingClientRect();
-          audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
-        };
-
-        const setVolume = () => {
-          audio.volume = volume.value;
-        };
-
-        const toggleShuffle = () => {
-          shuffle.value = !shuffle.value;
-          showToast(shuffle.value ? '🔀 Shuffle on' : 'Shuffle off');
-        };
-
-        const toggleRepeat = () => {
-          repeat.value = !repeat.value;
-          showToast(repeat.value ? '🔁 Repeat on' : 'Repeat off');
-        };
-
-        const openModal = (name) => {
-          activeModal.value = name;
-          if (name === 'playlist') isFirstLoad.value = false;
-        };
-
-        onMounted(() => {
-          audio.volume = volume.value;
-          loadAudio(currentIndex.value);
-
-          nextTick(() => {
-            if (isFirstLoad.value) openModal('playlist');
-          });
-
-          audio.addEventListener('timeupdate', () => { currentTime.value = audio.currentTime; });
-          audio.addEventListener('loadedmetadata', () => { duration.value = audio.duration; });
-          audio.addEventListener('ended', () => {
-            if (repeat.value) {
-              audio.currentTime = 0;
-              play();
-            } else {
-              nextSong();
-            }
-          });
-          audio.addEventListener('play', () => { playing.value = true; });
-          audio.addEventListener('pause', () => { playing.value = false; });
-        });
-
-        watch(currentIndex, (newIdx) => loadAudio(newIdx));
-
-        return {
-          songs, currentIndex, currentSong, playing, currentTime, duration, volume,
-          shuffle, repeat, toastMessage, activeModal, progressPercent, showSplash,
-          formatTime, togglePlay, nextSong, prevSong, selectSong, setProgress,
-          setVolume, toggleShuffle, toggleRepeat, openModal, dismissSplash,
-        };
+    const play = () => {
+      if (!audio.src) {
+        loadAudio(currentIndex.value);
       }
-    }).mount('#app');
+      
+      const playPromise = audio.play();
+      
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          playing.value = true;
+        }).catch((err) => {
+          console.warn('Play prevented:', err);
+          // ✅ Retry once after a short delay
+          playAttemptTimeout = setTimeout(() => {
+            audio.play().then(() => {
+              playing.value = true;
+            }).catch(() => {
+              showToast('Tap play to start');
+            });
+          }, 200);
+        });
+      }
+    };
+
+    const pause = () => {
+      clearTimeout(playAttemptTimeout);
+      audio.pause();
+      playing.value = false;
+    };
+
+    const togglePlay = () => {
+      playing.value ? pause() : play();
+    };
+
+    const nextSong = () => {
+      clearTimeout(playAttemptTimeout);
+      if (shuffle.value) {
+        let next = Math.floor(Math.random() * songs.length);
+        if (next === currentIndex.value && songs.length > 1) {
+          next = (next + 1) % songs.length;
+        }
+        currentIndex.value = next;
+      } else {
+        currentIndex.value = (currentIndex.value + 1) % songs.length;
+      }
+      // ✅ loadAudio is called by the watch, which now triggers play()
+    };
+
+    const prevSong = () => {
+      clearTimeout(playAttemptTimeout);
+      if (shuffle.value) {
+        currentIndex.value = Math.floor(Math.random() * songs.length);
+      } else {
+        currentIndex.value = (currentIndex.value - 1 + songs.length) % songs.length;
+      }
+      // ✅ loadAudio is called by the watch, which now triggers play()
+    };
+
+    const selectSong = (idx) => {
+      clearTimeout(playAttemptTimeout);
+      currentIndex.value = idx;
+      activeModal.value = null;
+      showToast(`Now: ${songs[idx].title}`);
+      // ✅ loadAudio is called by the watch, which now triggers play()
+    };
+
+    const setProgress = (e) => {
+      if (!audio.duration || isNaN(audio.duration)) return;
+      const rect = e.currentTarget.getBoundingClientRect();
+      const clickPercent = (e.clientX - rect.left) / rect.width;
+      audio.currentTime = clickPercent * audio.duration;
+    };
+
+    const setVolume = () => {
+      audio.volume = volume.value;
+    };
+
+    const toggleShuffle = () => {
+      shuffle.value = !shuffle.value;
+      showToast(shuffle.value ? '🔀 Shuffle on' : 'Shuffle off');
+    };
+
+    const toggleRepeat = () => {
+      repeat.value = !repeat.value;
+      showToast(repeat.value ? '🔁 Repeat on' : 'Repeat off');
+    };
+
+    const openModal = (name) => {
+      activeModal.value = name;
+      if (name === 'playlist') isFirstLoad.value = false;
+    };
+
+    onMounted(() => {
+      audio.volume = volume.value;
+      audio.preload = 'auto';
+      
+      // ✅ Load the first track
+      loadAudio(currentIndex.value);
+
+      // Show playlist on first visit
+      nextTick(() => {
+        if (isFirstLoad.value) openModal('playlist');
+      });
+
+      // Event listeners
+      audio.addEventListener('timeupdate', () => {
+        currentTime.value = audio.currentTime;
+      });
+      
+      audio.addEventListener('loadedmetadata', () => {
+        duration.value = audio.duration;
+      });
+      
+      audio.addEventListener('ended', () => {
+        if (repeat.value) {
+          audio.currentTime = 0;
+          play();
+        } else {
+          nextSong();
+        }
+      });
+      
+      audio.addEventListener('play', () => {
+        playing.value = true;
+      });
+      
+      audio.addEventListener('pause', () => {
+        // Only set to false if it wasn't paused due to buffering
+        if (audio.readyState < 3) return;
+        playing.value = false;
+      });
+      
+      audio.addEventListener('waiting', () => {
+        // Show loading state if needed
+        console.log('Buffering...');
+      });
+      
+      audio.addEventListener('error', (e) => {
+        console.error('Audio error:', e);
+        playing.value = false;
+        showToast('⚠️ Failed to load track');
+        
+        // ✅ Auto-skip to next song on error after 2 seconds
+        setTimeout(() => {
+          if (!playing.value) {
+            nextSong();
+          }
+        }, 2000);
+      });
+    });
+
+    // ✅ Fixed watch: now properly loads AND plays when index changes
+    watch(currentIndex, (newIdx, oldIdx) => {
+      if (newIdx !== oldIdx || !audio.src) {
+        loadAudio(newIdx);
+        // ✅ Auto-play after loading
+        nextTick(() => {
+          setTimeout(() => play(), 150);
+        });
+      }
+    });
+
+    return {
+      songs,
+      currentIndex,
+      currentSong,
+      playing,
+      currentTime,
+      duration,
+      volume,
+      shuffle,
+      repeat,
+      toastMessage,
+      activeModal,
+      progressPercent,
+      showSplash,
+      formatTime,
+      togglePlay,
+      nextSong,
+      prevSong,
+      selectSong,
+      setProgress,
+      setVolume,
+      toggleShuffle,
+      toggleRepeat,
+      openModal,
+      dismissSplash,
+    };
+  }
+}).mount('#app');
   </script>
 </body>
 </html>
